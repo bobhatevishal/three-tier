@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  my-db:
+    image: vishalbobhate/vishalbobhate_mysql:v2
+    container_name: my-db
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: classic_db
+    networks:
+      - three-tier-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin -u user -psecret ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  my-backend:
+    image: vishalbobhate/vishalbobhate_php:v2
+    container_name: php
+    networks:
+      - three-tier-network
+    depends_on:
+      - my-db
+
+  my-frontend:
+    image: vishalbobhate/vishalbobhate_nginx:v3
+    container_name: nginx
+    ports:
+      - "80:80"
+    networks:
+      - three-tier-network
+    depends_on:
+      - my-backend
+
+networks:
+  three-tier-network:
+    driver: bridge
